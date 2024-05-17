@@ -1,34 +1,77 @@
-import { ComponentProps, useState } from "react"
+import { ComponentProps, useEffect, useState } from "react"
 import { ModeToggle } from "./components/mode-toggle"
 import { useTheme } from "./components/theme-provider"
 import { Button } from "./components/ui/button"
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "./components/ui/card"
 import { cn } from "./lib/utils"
 import { File, Settings } from "lucide-react"
 import { Badge } from "./components/ui/badge"
+import { SiteFooter } from "./footer"
+import axios from "axios"
 
-const CodeText = (props: ComponentProps<"span">) => {
-    return (
-        <span
-            {...props}
-            className={cn(
-                props.className,
-                "bg-muted text-muted-foreground rounded font-mono text-sm p-1"
-            )}
-        />
-    )
+
+
+// const data = [
+//     {
+//         image: "/notes-icon/note-1.png",
+//         title: "My Note #1",
+//         webpage: "unsplash.com",
+//         tags: ["Water", "Aquatic life", "Marine fish"],
+//         highlights:
+//             "Water is an inorganic compound with the chemical formula H2O. It is a transparent, tasteless, odorless,[c] and nearly colorless chemical substance.",
+//         notes: "My first note for research on a topic associated with water for my project",
+//     },
+//     {
+//         image: "/notes-icon/note-2.png",
+//         title: "My Note #2",
+//         webpage: "pexels.com",
+//         tags: ["Forest", "Trees", "Nature"],
+//         highlights:
+//             "Forests are complex ecosystems that house diverse plant and animal species. They play a crucial role in maintaining ecological balance and supporting life.",
+//         notes: "Collected information on the importance of forests and their role in the environment.",
+//     },
+//     {
+//         image: "/notes-icon/note-3.png",
+//         title: "My Note #3",
+//         webpage: "pixabay.com",
+//         tags: ["Space", "Planets", "Astronomy"],
+//         highlights:
+//             "Space is a vast expanse that exists beyond Earth's atmosphere. It includes all of the universe's matter and energy, including planets, stars, and galaxies.",
+//         notes: "Notes on the vastness of space and key astronomical concepts for my science project.",
+//     },
+//     {
+//         image: "/notes-icon/note-1.png",
+//         title: "My Note #4",
+//         webpage: "wikipedia.org",
+//         tags: ["History", "Ancient civilizations", "Archaeology"],
+//         highlights:
+//             "Ancient civilizations, such as Mesopotamia and Egypt, are known for their early developments in writing, law, and architecture.",
+//         notes: "Researching ancient civilizations and their contributions to modern society.",
+//     },
+// ]
+
+interface Note {
+    image: string;
+    title: string;
+    webpage: string;
+    tags: string[];
+    highlights: string;
+    notes: string;
 }
 
+
 function App() {
-    const [count, setCount] = useState(0)
-    const { theme } = useTheme()
+    const [isOpened, setOpened] = useState(false)
+    const [notes, setNotes] = useState<Note[]>([])
+    async function getData() {
+        const { data } = await axios.get("localhost:3000/data")
+        const result = data as Note[]
+        console.log(data)
+
+        setNotes(result)
+    }
+    useEffect(() => {
+        getData()
+    }, [])
     return (
         <>
             <header className="px-8 w-full bg-secondary">
@@ -46,60 +89,67 @@ function App() {
                     </div>
                 </div>
             </header>
-            <div className="container flex h-full min-h-screen gap-2 mt-4">
-                <div className="w-[400px] min-h-[500px] bg-secondary rounded-lg p-4">
-                    <Button variant={"outline"} className="w-full gap-4">
+            <div className="container flex h-full min-h-screen gap-2 mt-4 flex-col lg:flex-row mb-12">
+                <div className="lg:w-[400px] lg:min-h-[500px] bg-secondary rounded-lg p-4 w-full">
+                    <Button
+                        variant={"outline"}
+                        className="w-full gap-4 hover:bg-background"
+                        onClick={() => setOpened(!isOpened)}
+                    >
                         <File className="text-teal-700" />
                         List of notes
                     </Button>
                 </div>
-                <div className="w-full min-h-[500px] rounded-lg border p-4">
-                    <h2 className="mb-6">Notes created on 16th May 2024</h2>
-                    <div className="flex p-4 bg-secondary justify-between">
-                        <div className="flex flex-col items-start">
-                            <div className="flex gap-4">
-                                <img
-                                    src="/notes-icon/note-1.png"
-                                    alt="note-1"
-                                    className="h-16"
-                                />
-                                <div>
-                                    <h3 className="text-lg font-bold md:text-xl xl:text-2xl 3xl:text-3xl">
-                                        My Note #1
-                                        <p className="text-sm md:text-md xl:text-lg 3xl:text-xl">
-                                            webpage: unsplash.com
+                <div
+                    className={cn(
+                        "duration-500 overflow-x-hidden",
+                        isOpened ? "w-full h-full" : "lg:w-0 h-0"
+                    )}
+                >
+                    <div className="w-full min-h-[500px] rounded-lg border p-4 space-y-4">
+                        <h2 className="mb-6">Notes created on 16th May 2024</h2>
+                        {notes.map((item) => (
+                            <div className="flex p-4 bg-secondary rounded-md justify-between">
+                                <div className="flex flex-col items-start">
+                                    <div className="flex gap-4">
+                                        <img
+                                            src={item.image}
+                                            alt="note-1"
+                                            className="h-16"
+                                        />
+                                        <div>
+                                            <h3 className="text-lg font-bold md:text-xl xl:text-2xl 3xl:text-3xl">
+                                                {item.title}
+                                                <p className="text-sm md:text-md xl:text-lg 3xl:text-xl">
+                                                    webpage: {item.webpage}
+                                                </p>
+                                            </h3>
+                                        </div>
+                                    </div>
+                                    <div className="flex mt-4 mb-2 gap-1">
+                                        <p className="mr-6 font-bold">Tags</p>
+                                        {item.tags.map((tag) => (
+                                            <Badge>{tag}</Badge>
+                                        ))}
+                                    </div>
+                                    <div className="flex mb-2">
+                                        <p className="mr-6 font-bold">
+                                            Highlights
                                         </p>
-                                    </h3>
+                                        <p>{item.highlights}</p>
+                                    </div>
+                                    <div className="flex">
+                                        <p className="mr-6 font-bold">Notes</p>
+                                        <p>{item.notes}</p>
+                                    </div>
                                 </div>
+                                <div>11:05 AM</div>
                             </div>
-                            <div className="flex mt-4 mb-2 gap-1">
-                                <p className="mr-6">Tags</p>
-                                <Badge>Water</Badge>
-                                <Badge>Aquatic life</Badge>
-                                <Badge>Marine fish</Badge>
-                            </div>
-                            <div className="flex mb-2">
-                                <p className="mr-6">Highlights</p>
-                                <p>
-                                    Water is an inorganic compound with
-                                    the chemical formula H2O. It is a
-                                    transparent, tasteless,
-                                    odorless,[c] and nearly colorless chemical
-                                    substance.
-                                </p>
-                            </div>
-                            <div className="flex">
-                                <p className="mr-6">Notes</p>
-                                <p>
-                                    My first note for research on a topic
-                                    associated with water for my projrct
-                                </p>
-                            </div>
-                        </div>
-                        <div>11:05 AM</div>
+                        ))}
                     </div>
                 </div>
             </div>
+            <SiteFooter />
         </>
     )
 }
