@@ -22,7 +22,7 @@ function App() {
     const [isOpened, setOpened] = useState(false)
     const [notes, setNotes] = useState<Note[]>([])
     async function getData() {
-        const { data } = await axios.get("192.168.108.214:3333/data")
+        const { data } = await axios.get("http://192.168.108.214:3333/data")
         const result = data as Note[]
         console.log(data)
 
